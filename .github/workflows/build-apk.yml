@@ -1,0 +1,38 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Gradle Wrapper 생성 (없을 경우)
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            gradle wrapper --gradle-version 8.10
+          fi
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: Debug APK 빌드
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: APK 업로드 (Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoSphere360-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
